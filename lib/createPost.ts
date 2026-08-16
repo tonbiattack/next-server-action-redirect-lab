@@ -19,9 +19,9 @@ function readTitle(formData: FormData): string | null {
 /**
  * Server Actionから呼び出す投稿作成処理。
  *
- * BUG: redirect() は通常の戻り値ではなく、Next.js が扱うリダイレクト用の
- * 例外シグナルを送出する。この広いcatchは保存エラーだけでなく、その成功時の
- * シグナルまでstorage-errorとして扱ってしまう。
+ * redirect() は通常の戻り値ではなく、Next.js が扱うリダイレクト用の
+ * 例外シグナルを送出する。保存失敗だけをtry/catchで処理し、成功後の
+ * シグナルは呼び出し元まで伝播させる。
  */
 export async function createPostAndNavigate(
   formData: FormData,
@@ -35,13 +35,17 @@ export async function createPostAndNavigate(
     };
   }
 
+  let post: { readonly id: string };
   try {
-    const post = await repository.create({ title });
-    redirect(`/posts/${post.id}`);
+    post = await repository.create({ title });
   } catch {
     return {
       status: "storage-error",
       message: "投稿を保存できませんでした。",
     };
   }
+
+  // redirect()はNEXT_REDIRECT例外シグナルを送出するため、保存失敗だけを扱う
+  // try/catchの外で実行し、Next.jsの呼び出し元まで伝播させる。
+  redirect(`/posts/${post.id}`);
 }

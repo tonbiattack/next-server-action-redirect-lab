@@ -17,7 +17,9 @@ function assertRedirectTo(error: unknown, expectedPath: string): boolean {
   assert.equal(error.message, "NEXT_REDIRECT");
 
   const digest = (error as Error & { digest?: unknown }).digest;
-  assert.equal(typeof digest, "string");
+  if (typeof digest !== "string") {
+    assert.fail("redirect digestは文字列であるべきです");
+  }
   assert.match(
     digest,
     new RegExp(

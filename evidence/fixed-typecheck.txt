@@ -1,0 +1,4 @@
+
+> next-server-action-redirect-lab@0.1.0 typecheck
+> tsc --noEmit
+
